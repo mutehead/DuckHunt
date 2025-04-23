@@ -222,6 +222,12 @@ function drawStartState()
     Sounds['startState']:setVolume(0.3)
     Sounds['startState']:play() -- Play the sound
     Sounds['startState']:setLooping(true)
+    if Sounds['playState']:isPlaying() then
+        Sounds['playState']:stop()
+    end
+    if Sounds['level2']:isPlaying() then
+        Sounds['level2']:stop()
+    end
     love.graphics.printf("DUCKHUNT PLUS",titleFont,10,50, gameWidth,"center")
     love.graphics.printf("Press Enter to Play or Escape to exit", 10,90, gameWidth,"center")
     love.graphics.printf("GET ME GREEN DUCKS", titleFont, 10,130, gameWidth,"center")
