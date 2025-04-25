@@ -10,11 +10,11 @@ local Tween = require "libs.tween"
 local Explosion = require "engine/Explosion"
 
 local tweenShot1 = nil
-
+local explosions = {}
 
 function love.load()
     
-    explosions = {}
+   -- explosions = {}
     love.window.setTitle("DCKWRTH") -- stting the title of the window
     love.graphics.setDefaultFilter('nearest', 'nearest') -- scaling
     Push:setupScreen(gameWidth, gameHeight, windowWidth, windowHeight, {fullscreen = false, resizable = true})
@@ -37,11 +37,26 @@ function love.load()
 
    -- tween_img = GameEnv()
 
+   for i = 1, 10 do
+        table.insert(explosions, Explosion())
+   end
+
 end
 
 -- when the game window resizes
 function love.resize(w,h)
     Push:resize(w,h)
+end
+
+function getExplosion()
+    for _, explosion in ipairs(explosions) do
+        if not explosion:isActive() then
+            return explosion
+        end
+    end
+    local newExplosion = Explosion()
+    table.insert(explosions, newExplosion)
+    return newExplosion
 end
 
 -- keyboard pressing
@@ -124,8 +139,11 @@ function love.update(dt)
                 end
             elseif ducks[i].dead and ducks[i].y > gameHeight + ducks[i].height then
                     table.remove(ducks,i)
+
             end
         end
+
+
 
         for i=#explosions,1,-1 do
             local explosions = explosions[i]
@@ -160,6 +178,37 @@ function love.update(dt)
             table.remove(explosions,i)
         end
     end
+    for _, explosion in ipairs(explosions) do
+        explosion:update(dt)
+    end
+end
+
+function checkDuckHit(x,y)
+    for i = #ducks,1, -1 do
+        local duck = ducks[i]
+        if hitDetected(duck,x,y)then
+            duck.dead = true
+            stats.score = stats.score + 1
+
+            --local explosion = getExplosion()
+
+            if not ducks[i].isDecoy  then
+              --  explosion:setColor(1, 0.5, 0) 
+            --elseif not ducks[i].isDecoy  then
+              --  explosion:setColor(1, 0, 0) 
+            else
+                local explosion = getExplosion()
+                explosion:setColor(1, 0, 0) 
+            end
+            
+            -- Trigger the explosion at duck position
+            explosion:trigger(duck.x, duck.y)
+            
+            
+            return true
+        end
+    end
+    return
 end
 
 function love.draw()
@@ -179,11 +228,14 @@ function love.draw()
         drawIntermission()
     elseif gameState == "alienState" then
         drawAlienState()
-        for _, explosion in ipairs(explosions) do
-            explosion:draw()
-        end
+        
+        
+        
     end
     Push:finish()
+    for _, explosion in ipairs(explosions) do
+        explosion:draw()
+    end
 
 
 end
